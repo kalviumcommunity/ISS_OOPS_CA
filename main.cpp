@@ -9,14 +9,33 @@ private:
     string email;
 
 public:
-    Candidate(string name, string email) : name(name), email(email) {}
-
+    Candidate(){
+        cout << "Default Constructor Called" << endl;
+    };
+    Candidate(string name, string email) {
+        this->name = name;
+        this->email = email;
+        cout << "Parameterised Constructor Called" << endl;
+    }
+    ~Candidate(){
+        cout << "Candidate Destructor Called" << endl;
+    };
+    void setCandidate() {
+        string name;
+        string email;
+        cout << "Enter Candidate Name: ";
+        getline(cin, name);
+        this->name = name;
+        cout << "Enter Candidate Email: ";
+        getline(cin, email);
+        this->email = email;
+    }
     string getName() const {
-        return name;
+        return this->name;
     }
 
     string getEmail() const {
-        return email;
+        return this->email;
     }
 };
 
@@ -27,18 +46,31 @@ private:
     Candidate candidate;
 
 public:
-    Meeting(string date, string time, Candidate candidate) : date(date), time(time), candidate(candidate) {}
+    Meeting(string date, string time, Candidate candidate) {
+        this->date = date;
+        this->time = time;
+        this->candidate = candidate;
+    }
+    Meeting(const Meeting &other){
+        this->date = other.date;
+        this->time = other.time;
+        this->candidate = other.candidate;
+        cout << "Copy Constructor Called" << endl;
+    }
+    ~Meeting() {
+        cout << "Destructor Called" << endl;
+    }
 
     string getDate() const {
-        return date;
+        return this->date;
     }
 
     string getTime() const {
-        return time;
+        return this->time;
     }
-
+ 
     Candidate getCandidate() const {
-        return candidate;
+        return this->candidate;
     }
 };
 
@@ -47,35 +79,41 @@ private:
     vector<Meeting> meetings;
 
 public:
-    void scheduleMeeting(string date, string time, Candidate candidate) {
+    void scheduleMeeting(Candidate candidate) {
+        string date, time;
+        cout << "Enter Meeting Date (YYYY-MM-DD): ";
+        getline(cin, date);
+        cout << "Enter Meeting Time (HH:MM AM/PM): ";
+        getline(cin, time);
+        
         Meeting meeting(date, time, candidate);
         meetings.push_back(meeting);
         cout << "Meeting scheduled successfully for " << candidate.getName() << endl;
     }
 
-    void listMeetings() {
-        if (meetings.empty()) {
-            cout << "No meetings scheduled." << endl;
-            return;
-        }
+// For later milestones
+    // void listMeetings() {
+    //     if (meetings.empty()) {
+    //         cout << "No meetings scheduled." << endl;
+    //         return;
+    //     }
 
-        cout << "Scheduled Meetings:" << endl;
-        for (const Meeting& meeting : meetings) {
-            cout << "Date: " << meeting.getDate() << ", Time: " << meeting.getTime() << ", Candidate: " << meeting.getCandidate().getName() << endl;
-        }
-    }
+    //     cout << "Scheduled Meetings:" << endl;
+    //     for (const Meeting& meeting : meetings) {
+    //         cout << "Date: " << meeting.getDate() << ", Time: " << meeting.getTime() << ", Candidate: " << meeting.getCandidate().getName() << endl;
+    //     }
+    // }
 };
 
 int main() {
     MeetingScheduler scheduler;
+    Candidate c1;
+    c1.setCandidate();
 
-    Candidate candidate1("Dev Pratap", "dev@freshmenu.com");
-    Candidate candidate2("Navaneeth", "nav@phonepe.com");
+    scheduler.scheduleMeeting(c1);
 
-    scheduler.scheduleMeeting("2023-09-25", "10:00 AM", candidate1);
-    scheduler.scheduleMeeting("2023-09-26", "2:00 PM", candidate2);
-
-    scheduler.listMeetings();
+// For later milestones
+    // scheduler.listMeetings();
 
     return 0;
 }
