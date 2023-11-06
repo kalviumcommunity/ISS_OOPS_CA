@@ -37,10 +37,10 @@ class Meeting {
 private:
     string date;
     string time;
-    Candidate candidate;
+    Candidate* candidate;
 
 public:
-    Meeting(string date, string time, Candidate candidate) {
+    Meeting(string date, string time, Candidate* candidate) {
         this->date = date;
         this->time = time;
         this->candidate = candidate;
@@ -48,7 +48,11 @@ public:
     Meeting(const Meeting &other){
         this->date = other.date;
         this->time = other.time;
-        this->candidate = other.candidate;
+        this->candidate = new Candidate(*(other.candidate));
+    }
+
+    ~Meeting() {
+        delete candidate;
     }
 
     string getDate() const {
@@ -58,8 +62,8 @@ public:
     string getTime() const {
         return this->time;
     }
- 
-    Candidate getCandidate() const {
+
+    Candidate* getCandidate() const {
         return this->candidate;
     }
 };
@@ -67,7 +71,7 @@ public:
 class MeetingScheduler {
 private:
     static string companyName;
-    vector<Meeting> meetings;
+    vector<Meeting*> meetings;
 
 public:
     static void setCompanyName(string name) {
@@ -77,16 +81,16 @@ public:
     static string getCompanyName() {
         return companyName;
     }
-    void scheduleMeeting(Candidate candidate) {
+    void scheduleMeeting(Candidate* candidate) {
         string date, time;
         cout << "Enter Meeting Date (DD-MM-YYYY): ";
         getline(cin, date);
         cout << "Enter Meeting Time (HH:MM AM/PM): ";
         getline(cin, time);
-        
-        Meeting meeting(date, time, candidate);
+
+        Meeting* meeting = new Meeting(date, time, candidate);
         meetings.push_back(meeting);
-        cout << "Meeting scheduled successfully for " << candidate.getName() << endl;
+        cout << "Meeting scheduled successfully for " << candidate->getName() << endl;
     }
 
     void listMeetings() {
@@ -95,8 +99,14 @@ public:
             return;
         }
 
-        for (const Meeting& meeting : meetings) {
-            cout << "Date: " << meeting.getDate() << ", Time: " << meeting.getTime() << ", Candidate: " << meeting.getCandidate().getName() << endl;
+        for (const Meeting* meeting : meetings) {
+            cout << "Date: " << meeting->getDate() << ", Time: " << meeting->getTime() << ", Candidate: " << meeting->getCandidate()->getName() << endl;
+        }
+    }
+
+    ~MeetingScheduler() {
+        for (Meeting* meeting : meetings) {
+            delete meeting;
         }
     }
 };
@@ -107,10 +117,11 @@ int main() {
 
     MeetingScheduler::setCompanyName("PhonePe");
     MeetingScheduler scheduler;
-    Candidate c1;
+    Candidate* c1;
 
     while (true) {
-        c1.setCandidate();
+        c1 = new Candidate();
+        c1->setCandidate();
         scheduler.scheduleMeeting(c1);
 
         cout << "Do you want to schedule another meeting? (yes/no): ";
@@ -118,12 +129,13 @@ int main() {
         getline(cin, choice);
 
         if (choice != "yes") {
+            delete c1;
             break;
         }
-    };
+    }
 
     cout<< "Welcome to "<< MeetingScheduler::getCompanyName() << ", Here are your scheduled meetings: " << endl;
     scheduler.listMeetings();
 
     return 0;
-};
+}
