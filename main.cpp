@@ -3,33 +3,59 @@
 #include <string>
 using namespace std;
 
-class Candidate {
-private:
+class Person {
+protected:
     string name;
     string email;
 
 public:
-    Candidate(){};
-    Candidate(string name, string email) {
-        this->name = name;
-        this->email = email;
-    }
-    void setCandidate() {
-        string name;
-        string email;
-        cout << "Enter Candidate Name: ";
-        getline(cin, name);
-        this->name = name;
-        cout << "Enter Candidate Email: ";
-        getline(cin, email);
-        this->email = email;
-    }
+    Person() {}
+    Person(string name, string email) : name(name), email(email) {}
+
+    // Pure virtual function, making Person an abstract class
+    virtual void setDetails() = 0;
+
     string getName() const {
-        return this->name;
+        return name;
     }
 
     string getEmail() const {
-        return this->email;
+        return email;
+    }
+};
+
+class Candidate : public Person {
+public:
+    Candidate() {}
+    Candidate(string name, string email) : Person(name, email) {}
+
+    void setDetails() override {
+        cout << "Enter Candidate Name: ";
+        getline(cin, name);
+        cout << "Enter Candidate Email: ";
+        getline(cin, email);
+    }
+};
+
+class Employee : public Person {
+private:
+    string designation;
+
+public:
+    Employee() {}
+    Employee(string name, string email, string designation) : Person(name, email), designation(designation) {}
+
+    void setDetails() override {
+        cout << "Enter Employee Name: ";
+        getline(cin, name);
+        cout << "Enter Employee Email: ";
+        getline(cin, email);
+        cout << "Enter Designation: ";
+        getline(cin, designation);
+    }
+
+    string getDesignation() const {
+        return designation;
     }
 };
 
@@ -37,34 +63,21 @@ class Meeting {
 private:
     string date;
     string time;
-    Candidate* candidate;
+    Person* participant;
 
 public:
-    Meeting(string date, string time, Candidate* candidate) {
-        this->date = date;
-        this->time = time;
-        this->candidate = candidate;
-    }
-    Meeting(const Meeting &other){
-        this->date = other.date;
-        this->time = other.time;
-        this->candidate = new Candidate(*(other.candidate));
-    }
-
-    ~Meeting() {
-        delete candidate;
-    }
+    Meeting(string date, string time, Person* participant) : date(date), time(time), participant(participant) {}
 
     string getDate() const {
-        return this->date;
+        return date;
     }
 
     string getTime() const {
-        return this->time;
+        return time;
     }
 
-    Candidate* getCandidate() const {
-        return this->candidate;
+    Person* getParticipant() const {
+        return participant;
     }
 };
 
@@ -81,16 +94,17 @@ public:
     static string getCompanyName() {
         return companyName;
     }
-    void scheduleMeeting(Candidate* candidate) {
+
+    void scheduleMeeting(Person* participant) {
         string date, time;
         cout << "Enter Meeting Date (DD-MM-YYYY): ";
         getline(cin, date);
         cout << "Enter Meeting Time (HH:MM AM/PM): ";
         getline(cin, time);
 
-        Meeting* meeting = new Meeting(date, time, candidate);
+        Meeting* meeting = new Meeting(date, time, participant);
         meetings.push_back(meeting);
-        cout << "Meeting scheduled successfully for " << candidate->getName() << endl;
+        cout << "Meeting scheduled successfully for " << participant->getName() << endl;
     }
 
     void listMeetings() {
@@ -100,7 +114,7 @@ public:
         }
 
         for (const Meeting* meeting : meetings) {
-            cout << "Date: " << meeting->getDate() << ", Time: " << meeting->getTime() << ", Candidate: " << meeting->getCandidate()->getName() << endl;
+            cout << "Date: " << meeting->getDate() << ", Time: " << meeting->getTime() << ", Participant: " << meeting->getParticipant()->getName() << endl;
         }
     }
 
@@ -114,27 +128,48 @@ public:
 string MeetingScheduler::companyName = "";
 
 int main() {
-
     MeetingScheduler::setCompanyName("PhonePe");
     MeetingScheduler scheduler;
-    Candidate* c1;
+    Person* participant;
 
     while (true) {
-        c1 = new Candidate();
-        c1->setCandidate();
-        scheduler.scheduleMeeting(c1);
+        cout << "Select participant type (1 for Candidate, 2 for Employee, 0 to exit): ";
+        int choice;
+        cin >> choice;
+        cin.ignore();  // Consume the newline character left by cin
+
+        switch (choice) {
+            case 1:
+                participant = new Candidate();
+                break;
+            case 2:
+                participant = new Employee();
+                break;
+            default:
+                // Exit the loop if the choice is not 1 or 2
+                delete participant;
+                participant = nullptr;
+                break;
+        }
+
+        if (!participant) {
+            break;  // Exit the loop if participant is null
+        }
+
+        participant->setDetails();
+        scheduler.scheduleMeeting(participant);
 
         cout << "Do you want to schedule another meeting? (yes/no): ";
-        string choice;
-        getline(cin, choice);
+        string choiceStr;
+        getline(cin, choiceStr);
 
-        if (choice != "yes") {
-            delete c1;
+        if (choiceStr != "yes") {
+            delete participant;
             break;
         }
     }
 
-    cout<< "Welcome to "<< MeetingScheduler::getCompanyName() << ", Here are your scheduled meetings: " << endl;
+    cout << "Welcome to " << MeetingScheduler::getCompanyName() << ", Here are your scheduled meetings: " << endl;
     scheduler.listMeetings();
 
     return 0;
